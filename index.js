@@ -8,69 +8,42 @@ const PROVIDER_TOKEN = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C7477
 let carts = {};
 let lastSpin = {};
 
-// 1. 50 TA MAHSULOTLI KATEGORIYALAR
+// 1. HAQIQIY RASMLI MAHSULOTLAR
 const menuData = {
     '🍕 Pitsalar': [
-        { id: 'p1', name: 'Margarita', price: 45000, img: 'https://picsum.photos/500/300?random=1' },
-        { id: 'p2', name: 'Peperoni', price: 55000, img: 'https://picsum.photos/500/300?random=2' },
-        { id: 'p3', name: 'Go\'shtli', price: 65000, img: 'https://picsum.photos/500/300?random=3' },
-        { id: 'p4', name: 'Meksikancha', price: 60000, img: 'https://picsum.photos/500/300?random=4' },
-        { id: 'p5', name: 'To\'rt fasl', price: 70000, img: 'https://picsum.photos/500/300?random=5' },
-        { id: 'p6', name: 'Qo\'ziqorinli', price: 48000, img: 'https://picsum.photos/500/300?random=6' },
-        { id: 'p7', name: 'Pishloqli', price: 42000, img: 'https://picsum.photos/500/300?random=7' },
-        { id: 'p8', name: 'Tovuqli', price: 52000, img: 'https://picsum.photos/500/300?random=8' }
+        { id: 'p1', name: 'Margarita', price: 45000, img: 'https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?w=600' },
+        { id: 'p2', name: 'Peperoni', price: 55000, img: 'https://images.unsplash.com/photo-1628840042765-356cda07504e?w=600' },
+        { id: 'p3', name: 'Go\'shtli Mix', price: 65000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600' },
+        { id: 'p4', name: 'Meksikancha', price: 60000, img: 'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?w=600' },
+        { id: 'p5', name: 'To\'rt fasl', price: 70000, img: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600' },
+        { id: 'p6', name: 'Qo\'ziqorinli', price: 48000, img: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=600' }
     ],
     '🍔 Burgerlar': [
-        { id: 'b1', name: 'Chizburger', price: 25000, img: 'https://picsum.photos/500/300?random=9' },
-        { id: 'b2', name: 'Gamburger', price: 22000, img: 'https://picsum.photos/500/300?random=10' },
-        { id: 'b3', name: 'Dubl Burger', price: 35000, img: 'https://picsum.photos/500/300?random=11' },
-        { id: 'b4', name: 'Eldor Burger', price: 40000, img: 'https://picsum.photos/500/300?random=12' },
-        { id: 'b5', name: 'Hot-Dog', price: 15000, img: 'https://picsum.photos/500/300?random=13' },
-        { id: 'b6', name: 'Shaurma', price: 24000, img: 'https://picsum.photos/500/300?random=14' },
-        { id: 'b7', name: 'Lavash Mini', price: 22000, img: 'https://picsum.photos/500/300?random=15' },
-        { id: 'b8', name: 'Lavash Katta', price: 30000, img: 'https://picsum.photos/500/300?random=16' }
+        { id: 'b1', name: 'Chizburger', price: 25000, img: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600' },
+        { id: 'b2', name: 'Gamburger', price: 22000, img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600' },
+        { id: 'b3', name: 'Dubl Burger', price: 35000, img: 'https://images.unsplash.com/photo-1586816001966-79b736744398?w=600' },
+        { id: 'b4', name: 'Hot-Dog Katta', price: 15000, img: 'https://images.unsplash.com/photo-1541234007145-34f0821c024d?w=600' },
+        { id: 'b5', name: 'Lavash', price: 30000, img: 'https://images.unsplash.com/photo-1626074353765-517a681e40be?w=600' }
     ],
     '🍟 Fast-Fud': [
-        { id: 'f1', name: 'Fri Kichik', price: 10000, img: 'https://picsum.photos/500/300?random=17' },
-        { id: 'f2', name: 'Fri Katta', price: 16000, img: 'https://picsum.photos/500/300?random=18' },
-        { id: 'f3', name: 'Naggetslar 6ta', price: 18000, img: 'https://picsum.photos/500/300?random=19' },
-        { id: 'f4', name: 'Naggetslar 9ta', price: 25000, img: 'https://picsum.photos/500/300?random=20' },
-        { id: 'f5', name: 'Kartoshka Derevnya', price: 14000, img: 'https://picsum.photos/500/300?random=21' },
-        { id: 'f6', name: 'Tovuq qanotchalari', price: 28000, img: 'https://picsum.photos/500/300?random=22' },
-        { id: 'f7', name: 'Sendvich', price: 15000, img: 'https://picsum.photos/500/300?random=23' },
-        { id: 'f8', name: 'Pishloqli tayoqchalar', price: 12000, img: 'https://picsum.photos/500/300?random=24' }
+        { id: 'f1', name: 'Fri Kichik', price: 10000, img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600' },
+        { id: 'f2', name: 'Fri Katta', price: 16000, img: 'https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?w=600' },
+        { id: 'f3', name: 'Naggetslar', price: 18000, img: 'https://images.unsplash.com/photo-1562967914-608f82629710?w=600' },
+        { id: 'f4', name: 'Tovuq qanotchalari', price: 28000, img: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=600' }
     ],
     '🥤 Ichimliklar': [
-        { id: 'i1', name: 'Cola 0.5L', price: 7000, img: 'https://picsum.photos/500/300?random=25' },
-        { id: 'i2', name: 'Cola 1.5L', price: 13000, img: 'https://picsum.photos/500/300?random=26' },
-        { id: 'i3', name: 'Fanta 0.5L', price: 7000, img: 'https://picsum.photos/500/300?random=27' },
-        { id: 'i4', name: 'Pepsi 1.5L', price: 13000, img: 'https://picsum.photos/500/300?random=28' },
-        { id: 'i5', name: 'Mors', price: 8000, img: 'https://picsum.photos/500/300?random=29' },
-        { id: 'i6', name: 'Sharbat 1L', price: 15000, img: 'https://picsum.photos/500/300?random=30' },
-        { id: 'i7', name: 'Kofe Latte', price: 14000, img: 'https://picsum.photos/500/300?random=31' },
-        { id: 'i8', name: 'Choy Ko\'k', price: 4000, img: 'https://picsum.photos/500/300?random=32' },
-        { id: 'i9', name: 'Suv 0.5L', price: 3000, img: 'https://picsum.photos/500/300?random=33' }
+        { id: 'i1', name: 'Coca-Cola 0.5', price: 7000, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600' },
+        { id: 'i2', name: 'Fanta 0.5', price: 7000, img: 'https://images.unsplash.com/photo-1624517452488-04869289c4ca?w=600' },
+        { id: 'i3', name: 'Kofe Latte', price: 14000, img: 'https://images.unsplash.com/photo-1541167760496-162955ed8a9f?w=600' },
+        { id: 'i4', name: 'Suv 0.5', price: 3000, img: 'https://images.unsplash.com/photo-1548839140-29a749e1cf4d?w=600' }
     ],
     '🥗 Salatlar': [
-        { id: 's1', name: 'Sezar', price: 25000, img: 'https://picsum.photos/500/300?random=34' },
-        { id: 's2', name: 'Grecheskiy', price: 22000, img: 'https://picsum.photos/500/300?random=35' },
-        { id: 's3', name: 'Olivye', price: 18000, img: 'https://picsum.photos/500/300?random=36' },
-        { id: 's4', name: 'Mujskoy Kapriz', price: 32000, img: 'https://picsum.photos/500/300?random=37' },
-        { id: 's5', name: 'Achchiq-chuchuk', price: 10000, img: 'https://picsum.photos/500/300?random=38' },
-        { id: 's6', name: 'Bahor', price: 15000, img: 'https://picsum.photos/500/300?random=39' },
-        { id: 's7', name: 'Tovuqli salat', price: 24000, img: 'https://picsum.photos/500/300?random=40' }
+        { id: 's1', name: 'Sezar', price: 25000, img: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?w=600' },
+        { id: 's2', name: 'Grecheskiy', price: 22000, img: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600' }
     ],
     '🍰 Shirinliklar': [
-        { id: 'd1', name: 'Medovik', price: 15000, img: 'https://picsum.photos/500/300?random=41' },
-        { id: 'd2', name: 'Cheesecake', price: 22000, img: 'https://picsum.photos/500/300?random=42' },
-        { id: 'd3', name: 'Muzqaymoq', price: 8000, img: 'https://picsum.photos/500/300?random=43' },
-        { id: 'd4', name: 'Tiramisu', price: 25000, img: 'https://picsum.photos/500/300?random=44' },
-        { id: 'd5', name: 'Napoleone', price: 18000, img: 'https://picsum.photos/500/300?random=45' },
-        { id: 'd6', name: 'Eklayer', price: 7000, img: 'https://picsum.photos/500/300?random=46' },
-        { id: 'd7', name: 'Vafli', price: 14000, img: 'https://picsum.photos/500/300?random=47' },
-        { id: 'd8', name: 'Donut', price: 10000, img: 'https://picsum.photos/500/300?random=48' },
-        { id: 'd9', name: 'Brauni', price: 16000, img: 'https://picsum.photos/500/300?random=49' },
-        { id: 'd10', name: 'Mevali tort', price: 20000, img: 'https://picsum.photos/500/300?random=50' }
+        { id: 'd1', name: 'Cheesecake', price: 22000, img: 'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=600' },
+        { id: 'd2', name: 'Medovik', price: 15000, img: 'https://images.unsplash.com/photo-1558301211-0d8c8ddee6ec?w=600' }
     ]
 };
 
@@ -87,14 +60,13 @@ bot.start((ctx) => {
     ctx.reply(`Salom ${ctx.from.first_name}! Eldor Food-ga xush kelibsiz.`, mainButtons);
 });
 
-// 3. DINAMIK MENYU (Kategoriyalar)
+// 3. DINAMIK MENYU
 bot.hears('🍽 Menyu', (ctx) => {
     const categoryButtons = Object.keys(menuData).map(cat => [cat]);
     categoryButtons.push(['⬅️ Orqaga']);
     ctx.reply("Bo'limni tanlang:", Markup.keyboard(categoryButtons).resize());
 });
 
-// Kategoriyani tanlaganda mahsulotlarni chiqarish
 Object.keys(menuData).forEach(category => {
     bot.hears(category, async (ctx) => {
         const items = menuData[category];
@@ -102,13 +74,13 @@ Object.keys(menuData).forEach(category => {
             await ctx.replyWithPhoto(item.img, {
                 caption: `✨ **${item.name}**\n💰 Narxi: ${item.price.toLocaleString()} so'm`,
                 parse_mode: 'Markdown',
-                ...Markup.inlineKeyboard([Markup.button.callback("🛒 Qo'shish", `add_${item.id}`)])
+                ...Markup.inlineKeyboard([Markup.button.callback("🛒 Savatga qo'shish", `add_${item.id}`)])
             });
         }
     });
 });
 
-// 4. SAVATGA QO'SHISH
+// 4. SAVAT LOGIKASI
 bot.action(/add_(.+)/, (ctx) => {
     const id = ctx.match[1];
     let found;
@@ -135,7 +107,7 @@ bot.hears('🛒 Savat', (ctx) => {
     text += `\n💰 Jami: ${total.toLocaleString()} so'm`;
 
     ctx.reply(text, Markup.keyboard([
-        [Markup.button.contactRequest('📱 Raqamni yuborish')],
+        [Markup.button.contactRequest('📱 Raqamni yuborish (Buyurtma)')],
         ['❌ Savatni tozalash', '⬅️ Orqaga']
     ]).resize());
 });
@@ -152,39 +124,50 @@ bot.hears('🎡 Omad g\'ildiragi', (ctx) => {
     const userId = ctx.from.id;
     const now = Date.now();
     if (lastSpin[userId] && (now - lastSpin[userId] < 24 * 60 * 60 * 1000)) {
-        return ctx.reply("Ertaga qaytib keling! ⛔️");
+        return ctx.reply("Siz bugun o'z omadingizni sinab ko'rdingiz. Ertaga qaytib keling! ⛔️");
     }
     ctx.reply("🎡 G'ildirak aylanmoqda...");
     setTimeout(() => {
         const win = prizes[Math.floor(Math.random() * prizes.length)];
         lastSpin[userId] = now;
         ctx.reply(`🎉 NATIJA: ${win}`);
-        bot.telegram.sendMessage(ADMIN_ID, `🎰 YUTUQ: ${ctx.from.first_name} - ${win}`);
+        bot.telegram.sendMessage(ADMIN_ID, `🎰 OMAD G'ILDIRAGI:\nFoydalanuvchi: ${ctx.from.first_name}\nYutuq: ${win}`);
     }, 2000);
 });
 
-// 6. TO'LOV
+// 6. TO'LOV VA ADMINGA HABAR
 bot.on('contact', async (ctx) => {
     const userCart = carts[ctx.from.id] || [];
     if (userCart.length === 0) return ctx.reply("Savat bo'sh!");
-    let total = userCart.reduce((sum, f) => sum + f.price, 0);
 
+    let total = userCart.reduce((sum, f) => sum + f.price, 0);
+    let itemsList = userCart.map(i => i.name).join(', ');
+
+    // Adminga zakazni yuborish
+    bot.telegram.sendMessage(ADMIN_ID, `🆕 YANGI BUYURTMA!\n👤 Mijoz: ${ctx.from.first_name}\n📞 Tel: ${ctx.message.contact.phone_number}\n🛍 Mahsulotlar: ${itemsList}\n💰 Jami: ${total.toLocaleString()} so'm`);
+
+    // To'lov hisobi
     await ctx.replyWithInvoice({
         title: 'Eldor Food',
-        description: 'Buyurtma uchun to\'lov',
+        description: 'Buyurtmangiz uchun to\'lov qiling',
         payload: `order_${ctx.from.id}`,
         provider_token: PROVIDER_TOKEN,
         currency: 'UZS',
-        prices: [{ label: 'Jami', amount: total * 100 }],
+        prices: [{ label: 'Jami', amount: total * 100 }], // Tiynlarda bo'lishi kerak
         start_parameter: 'pay'
     });
 });
 
 bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
 bot.on('successful_payment', (ctx) => {
-    ctx.reply("To'lov qabul qilindi! ✅");
+    ctx.reply("To'lov muvaffaqiyatli amalga oshirildi! Buyurtmangiz tayyorlanmoqda. ✅", mainButtons);
     carts[ctx.from.id] = [];
 });
 
 bot.launch();
-http.createServer((req, res) => { res.write('OK'); res.end(); }).listen(process.env.PORT || 8080);
+
+// Render uchun kichik server
+http.createServer((req, res) => {
+    res.write('Bot is running...');
+    res.end();
+}).listen(process.env.PORT || 8080);
