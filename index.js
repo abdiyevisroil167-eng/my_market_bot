@@ -1,46 +1,70 @@
 const { Telegraf, Markup } = require('telegraf');
 const http = require('http');
 
+// 1. ASOSIY KONFIGURATSIYA
 const bot = new Telegraf('8618779342:AAHUWVkWjptqG2bPnGk7er_tGhO9v_NAl2w');
-
 const ADMIN_ID = 6995131511;
+const PROVIDER_TOKEN = '398062629:TEST:999999999_F91D8F69C042267444B74CC0B3C747757EB0E065';
 
-// Ma'lumotlarni saqlash
+// Ma'lumotlar bazasi (vaqtinchalik)
 let users = new Set();
-let blackList = new Set();
 let carts = {};
+let lastSpin = {}; // Kim qachon g'ildirakni aylantirganini saqlaydi
 
 const foods = [
     { id: 'burger', name: '🍔 Burger', price: 25000, img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=500' },
     { id: 'pitsa', name: '🍕 Pitsa', price: 50000, img: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=500' },
-    { id: 'cola', name: '🥤 Coca-Cola', price: 10000, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500' },
-    { id: 'fri', name: '🍟 Fri', price: 15000, img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500' }
+    { id: 'cola', name: '🥤 Coca-Cola', price: 10000, img: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=500' }
 ];
 
-// Blokni tekshirish
-bot.use((ctx, next) => {
-    if (blackList.has(ctx.from.id)) {
-        return ctx.reply("Siz ushbu botdan bloklangansiz! 🚫");
-    }
-    return next();
-});
+const prizes = [
+    "🎁 Tekin Coca-Cola",
+    "🍟 Fri sovg'a",
+    "📉 5% chegirma",
+    "📉 10% chegirma",
+    "😢 Afsus, bu safar omad kelmadi"
+];
 
+// 2. KLAVIATURA (Tugmalar)
+const mainButtons = Markup.keyboard([
+    ['🍽 Menyu', '🛒 Savat'],
+    ['🎡 Omad g\'ildiragi', '👨‍💻 Bog\'lanish']
+]).resize();
+
+// 3. START BUYRUG'I
 bot.start((ctx) => {
     users.add(ctx.from.id);
     carts[ctx.from.id] = [];
-    ctx.reply(`Xush kelibsiz, ${ctx.from.first_name}!\n"Eldor Food" botidan eng mazali taomlarni buyurtma qiling.`,
-        Markup.keyboard([
-            ['🍽 Menyu', '🛒 Savat'],
-            ['👨‍💻 Admin bilan bog\'lanish']
-        ]).resize()
-    );
+    ctx.reply(`Salom ${ctx.from.first_name}! Eldor Food-ga xush kelibsiz.`, mainButtons);
 });
 
+// 4. OMAD G'ILDIRAGI (Yangi funksiya)
+bot.hears('🎡 Omad g\'ildiragi', (ctx) => {
+    const userId = ctx.from.id;
+    const now = Date.now();
+    const cooldown = 24 * 60 * 60 * 1000; // 24 soat
+
+    if (lastSpin[userId] && (now - lastSpin[userId] < cooldown)) {
+        return ctx.reply("Siz bugun o'ynab bo'ldingiz! ⛔️ Ertaga yana keling.");
+    }
+
+    ctx.reply("🎡 G'ildirak aylanmoqda...");
+
+    setTimeout(() => {
+        const win = prizes[Math.floor(Math.random() * prizes.length)];
+        lastSpin[userId] = now;
+
+        ctx.reply(`🎉 NATIJA: \n\n${win}\n\nKeyingi buyurtmada buni adminga ayting!`);
+        bot.telegram.sendMessage(ADMIN_ID, `🎰 YUTUQ: ${ctx.from.first_name} - ${win}`);
+    }, 2000);
+});
+
+// 5. MENYU VA SAVAT
 bot.hears('🍽 Menyu', async (ctx) => {
     for (const food of foods) {
         await ctx.replyWithPhoto(food.img, {
-            caption: `📌 **${food.name}**\n💰 Narxi: ${food.price.toLocaleString()} so'm`,
-            ...Markup.inlineKeyboard([Markup.button.callback(`🛒 Savatga qo'shish`, `add_${food.id}`)])
+            caption: `${food.name}\nNarxi: ${food.price} so'm`,
+            ...Markup.inlineKeyboard([Markup.button.callback("🛒 Qo'shish", `add_${food.id}`)])
         });
     }
 });
@@ -49,101 +73,41 @@ bot.action(/add_(.+)/, (ctx) => {
     const foodId = ctx.match[1];
     const food = foods.find(f => f.id === foodId);
     if (!carts[ctx.from.id]) carts[ctx.from.id] = [];
-
-    if (carts[ctx.from.id].length < 10) {
-        carts[ctx.from.id].push(food);
-        ctx.answerCbQuery(`${food.name} savatga qo'shildi! ✅`);
-    } else {
-        ctx.answerCbQuery(`Savat to'lib ketdi! ⚠️`, { show_alert: true });
-    }
+    carts[ctx.from.id].push(food);
+    ctx.answerCbQuery(`${food.name} qo'shildi! ✅`);
 });
 
 bot.hears('🛒 Savat', (ctx) => {
     const userCart = carts[ctx.from.id] || [];
-    if (userCart.length === 0) return ctx.reply("Savatchangiz bo'sh. 🛒");
+    if (userCart.length === 0) return ctx.reply("Savat bo'sh! 🛒");
 
-    let text = "🛒 Sizning savatchangiz:\n\n";
-    let total = 0;
-    userCart.forEach((f, i) => {
-        text += `${i + 1}. ${f.name} - ${f.price.toLocaleString()} so'm\n`;
-        total += f.price;
-    });
-    text += `\n💰 Jami: ${total.toLocaleString()} so'm\n\nTasdiqlash uchun raqamingizni yuboring:`;
-
-    ctx.reply(text, Markup.keyboard([[Markup.button.contactRequest('📱 Raqamni yuborish')], ['❌ Savatni tozalash']]).resize());
+    let total = userCart.reduce((sum, f) => sum + f.price, 0);
+    ctx.reply(`Jami: ${total} so'm.\nTo'lov uchun raqamingizni yuboring:`,
+        Markup.keyboard([[Markup.button.contactRequest('📱 Raqamni yuborish')]]).resize());
 });
 
-bot.hears('❌ Savatni tozalash', (ctx) => {
-    carts[ctx.from.id] = [];
-    ctx.reply("Savat tozalandi. ✅", Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize());
-});
-
-// --- BUYURTMA QABUL QILISH (LOKATSIYASIZ) ---
+// 6. TO'LOV TIZIMI
 bot.on('contact', async (ctx) => {
-    const user = ctx.from;
-    const phone = ctx.message.contact.phone_number;
-    const userCart = carts[user.id] || [];
+    const userCart = carts[ctx.from.id] || [];
+    let total = userCart.reduce((sum, f) => sum + f.price, 0);
 
-    if (userCart.length === 0) return ctx.reply("Savat bo'sh!");
-
-    const orderList = userCart.map(f => f.name).join(", ");
-    const adminMsg = `🔔 YANGI BUYURTMA!\n\n👤 Mijoz: ${user.first_name}\n📞 Tel: +${phone}\n🛍 Mahsulotlar: ${orderList}\n🆔 ID: ${user.id}`;
-
-    await bot.telegram.sendMessage(ADMIN_ID, adminMsg,
-        Markup.inlineKeyboard([Markup.button.callback("🚫 Bloklash", `block_${user.id}`)])
-    );
-
-    ctx.reply("Rahmat! Buyurtmangiz qabul qilindi. Tez orada bog'lanamiz! ✅",
-        Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize()
-    );
-
-    carts[user.id] = [];
+    await ctx.replyWithInvoice({
+        title: 'Eldor Food',
+        description: 'Buyurtma uchun to\'lov',
+        payload: `order_${ctx.from.id}`,
+        provider_token: PROVIDER_TOKEN,
+        currency: 'UZS',
+        prices: [{ label: 'Jami', amount: total * 100 }],
+        start_parameter: 'test'
+    });
 });
 
-// --- ADMIN PANEL ---
-bot.command('admin', (ctx) => {
-    if (ctx.from.id == ADMIN_ID) {
-        ctx.reply("Boss, boshqaruv paneliga xush kelibsiz!",
-            Markup.keyboard([['📊 Statistika', '📢 Reklama yuborish'], ['⬅️ Chiqish']]).resize()
-        );
-    }
+bot.on('pre_checkout_query', (ctx) => ctx.answerPreCheckoutQuery(true));
+bot.on('successful_payment', (ctx) => {
+    ctx.reply("To'lov qabul qilindi! ✅");
+    carts[ctx.from.id] = [];
 });
 
-bot.hears('📊 Statistika', (ctx) => {
-    if (ctx.from.id == ADMIN_ID) {
-        ctx.reply(`📈 Bot statistikasi:\n\n👥 Foydalanuvchilar: ${users.size} ta\n🚫 Bloklanganlar: ${blackList.size} ta`);
-    }
-});
-
-bot.command('send', (ctx) => {
-    if (ctx.from.id == ADMIN_ID) {
-        const text = ctx.message.text.split(' ').slice(1).join(' ');
-        if (!text) return ctx.reply("Matn yozishni unutdingiz!");
-
-        users.forEach(userId => {
-            bot.telegram.sendMessage(userId, `📣 **ADMIN XABARI:**\n\n${text}`, { parse_mode: 'Markdown' })
-                .catch(err => console.log(userId + " botni tark etgan."));
-        });
-        ctx.reply("Xabar hammaga yuborildi! 🚀");
-    }
-});
-
-bot.action(/block_(.+)/, (ctx) => {
-    const userId = parseInt(ctx.match[1]);
-    blackList.add(userId);
-    ctx.answerCbQuery("Bloklandi!");
-    ctx.editMessageText(ctx.callbackQuery.message.text + "\n\n🚫 BLOKLANDI!");
-});
-
-bot.hears('⬅️ Chiqish', (ctx) => {
-    ctx.reply("Admin paneldan chiqdingiz.", Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize());
-});
-
+// 7. SERVERNI ISHGA TUSHIRISH
 bot.launch();
-console.log("Eldor Shop Pro 🚀 ishga tushdi!");
-
-// Render uchun server
-http.createServer((req, res) => {
-    res.write('Bot is running!');
-    res.end();
-}).listen(process.env.PORT || 8080);
+http.createServer((req, res) => { res.write('OK'); res.end(); }).listen(process.env.PORT || 8080);
