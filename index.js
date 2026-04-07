@@ -144,3 +144,9 @@ bot.hears('⬅️ Chiqish', (ctx) => {
 
 bot.launch();
 console.log("Eldor Shop Pro 🚀 ishga tushdi!");
+
+const http = require('http');
+http.createServer((req, res) => {
+    res.write('Bot is running!');
+    res.end();
+}).listen(process.env.PORT || 8080);
