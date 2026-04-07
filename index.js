@@ -1,4 +1,5 @@
 const { Telegraf, Markup } = require('telegraf');
+const http = require('http');
 
 const bot = new Telegraf('8618779342:AAHUWVkWjptqG2bPnGk7er_tGhO9v_NAl2w');
 
@@ -8,6 +9,7 @@ const ADMIN_ID = 6995131511;
 let users = new Set();
 let blackList = new Set();
 let carts = {};
+let tempOrders = {}; // Vaqtincha buyurtma ma'lumotlarini saqlash uchun
 
 const foods = [
     { id: 'burger', name: '🍔 Burger', price: 25000, img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=500' },
@@ -16,7 +18,7 @@ const foods = [
     { id: 'fri', name: '🍟 Fri', price: 15000, img: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=500' }
 ];
 
-// Blokni tekshirish middleware
+// Blokni tekshirish
 bot.use((ctx, next) => {
     if (blackList.has(ctx.from.id)) {
         return ctx.reply("Siz ushbu botdan bloklangansiz! 🚫");
@@ -35,7 +37,6 @@ bot.start((ctx) => {
     );
 });
 
-// --- MENYU VA SAVAT ---
 bot.hears('🍽 Menyu', async (ctx) => {
     for (const food of foods) {
         await ctx.replyWithPhoto(food.img, {
@@ -50,11 +51,11 @@ bot.action(/add_(.+)/, (ctx) => {
     const food = foods.find(f => f.id === foodId);
     if (!carts[ctx.from.id]) carts[ctx.from.id] = [];
 
-    if (carts[ctx.from.id].length < 2) {
+    if (carts[ctx.from.id].length < 10) {
         carts[ctx.from.id].push(food);
         ctx.answerCbQuery(`${food.name} savatga qo'shildi! ✅`);
     } else {
-        ctx.answerCbQuery(`Maksimal 2 ta buyurtma mumkin! ⚠️`, { show_alert: true });
+        ctx.answerCbQuery(`Savat to'lib ketdi! ⚠️`, { show_alert: true });
     }
 });
 
@@ -78,7 +79,7 @@ bot.hears('❌ Savatni tozalash', (ctx) => {
     ctx.reply("Savat tozalandi. ✅", Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize());
 });
 
-// --- BUYURTMA QABUL QILISH VA ADMINGA YUBORISH ---
+// --- LOKATSIYA SO'RASH ---
 bot.on('contact', async (ctx) => {
     const user = ctx.from;
     const phone = ctx.message.contact.phone_number;
@@ -86,18 +87,47 @@ bot.on('contact', async (ctx) => {
 
     if (userCart.length === 0) return ctx.reply("Savat bo'sh!");
 
-    const orderList = userCart.map(f => f.name).join(", ");
-    const adminMsg = `🔔 YANGI BUYURTMA!\n\n👤 Mijoz: ${user.first_name}\n📞 Tel: +${phone}\n🛍 Mahsulot: ${orderList}\n🆔 ID: ${user.id}`;
+    // Buyurtmani vaqtinchalik saqlaymiz
+    tempOrders[user.id] = {
+        name: user.first_name,
+        phone: phone,
+        items: userCart.map(f => f.name).join(", ")
+    };
+
+    ctx.reply("📍 Ajoyib! Endi mahsulotni yetkazib berishimiz uchun lokatsiyangizni yuboring:",
+        Markup.keyboard([
+            [Markup.button.locationRequest('📍 Lokatsiyani yuborish')]
+        ]).resize()
+    );
+});
+
+// --- LOKATSIYANI QABUL QILISH VA ADMINGA YUBORISH ---
+bot.on('location', async (ctx) => {
+    const user = ctx.from;
+    const order = tempOrders[user.id];
+
+    if (!order) return ctx.reply("Xatolik yuz berdi. Iltimos menyudan qaytadan boshlang.");
+
+    const lat = ctx.message.location.latitude;
+    const lon = ctx.message.location.longitude;
+    const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
+
+    const adminMsg = `🔔 YANGI BUYURTMA!\n\n👤 Mijoz: ${order.name}\n📞 Tel: +${order.phone}\n🛍 Mahsulotlar: ${order.items}\n📍 Manzil: ${mapLink}\n🆔 ID: ${user.id}`;
 
     await bot.telegram.sendMessage(ADMIN_ID, adminMsg,
         Markup.inlineKeyboard([Markup.button.callback("🚫 Bloklash", `block_${user.id}`)])
     );
 
-    ctx.reply("Rahmat! Buyurtmangiz qabul qilindi. ✅", Markup.keyboard([['🍽 Menyu']]).resize());
+    ctx.reply("Rahmat! Buyurtmangiz va lokatsiyangiz qabul qilindi. Tez orada bog'lanamiz! ✅",
+        Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize()
+    );
+
+    // Ma'lumotlarni tozalash
     carts[user.id] = [];
+    delete tempOrders[user.id];
 });
 
-// --- ADMIN PANEL FUNKSIYALARI ---
+// --- ADMIN PANEL ---
 bot.command('admin', (ctx) => {
     if (ctx.from.id == ADMIN_ID) {
         ctx.reply("Boss, boshqaruv paneliga xush kelibsiz!",
@@ -109,12 +139,6 @@ bot.command('admin', (ctx) => {
 bot.hears('📊 Statistika', (ctx) => {
     if (ctx.from.id == ADMIN_ID) {
         ctx.reply(`📈 Bot statistikasi:\n\n👥 Foydalanuvchilar: ${users.size} ta\n🚫 Bloklanganlar: ${blackList.size} ta`);
-    }
-});
-
-bot.hears('📢 Reklama yuborish', (ctx) => {
-    if (ctx.from.id == ADMIN_ID) {
-        ctx.reply("Reklama yuborish uchun: \n`/send reklama matni` ko'rinishida yozing.");
     }
 });
 
@@ -145,7 +169,7 @@ bot.hears('⬅️ Chiqish', (ctx) => {
 bot.launch();
 console.log("Eldor Shop Pro 🚀 ishga tushdi!");
 
-const http = require('http');
+// Render uchun server
 http.createServer((req, res) => {
     res.write('Bot is running!');
     res.end();
