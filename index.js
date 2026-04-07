@@ -9,7 +9,6 @@ const ADMIN_ID = 6995131511;
 let users = new Set();
 let blackList = new Set();
 let carts = {};
-let tempOrders = {}; // Vaqtincha buyurtma ma'lumotlarini saqlash uchun
 
 const foods = [
     { id: 'burger', name: '🍔 Burger', price: 25000, img: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=500' },
@@ -79,7 +78,7 @@ bot.hears('❌ Savatni tozalash', (ctx) => {
     ctx.reply("Savat tozalandi. ✅", Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize());
 });
 
-// --- LOKATSIYA SO'RASH ---
+// --- BUYURTMA QABUL QILISH (LOKATSIYASIZ) ---
 bot.on('contact', async (ctx) => {
     const user = ctx.from;
     const phone = ctx.message.contact.phone_number;
@@ -87,44 +86,18 @@ bot.on('contact', async (ctx) => {
 
     if (userCart.length === 0) return ctx.reply("Savat bo'sh!");
 
-    // Buyurtmani vaqtinchalik saqlaymiz
-    tempOrders[user.id] = {
-        name: user.first_name,
-        phone: phone,
-        items: userCart.map(f => f.name).join(", ")
-    };
-
-    ctx.reply("📍 Ajoyib! Endi mahsulotni yetkazib berishimiz uchun lokatsiyangizni yuboring:",
-        Markup.keyboard([
-            [Markup.button.locationRequest('📍 Lokatsiyani yuborish')]
-        ]).resize()
-    );
-});
-
-// --- LOKATSIYANI QABUL QILISH VA ADMINGA YUBORISH ---
-bot.on('location', async (ctx) => {
-    const user = ctx.from;
-    const order = tempOrders[user.id];
-
-    if (!order) return ctx.reply("Xatolik yuz berdi. Iltimos menyudan qaytadan boshlang.");
-
-    const lat = ctx.message.location.latitude;
-    const lon = ctx.message.location.longitude;
-    const mapLink = `https://www.google.com/maps?q=${lat},${lon}`;
-
-    const adminMsg = `🔔 YANGI BUYURTMA!\n\n👤 Mijoz: ${order.name}\n📞 Tel: +${order.phone}\n🛍 Mahsulotlar: ${order.items}\n📍 Manzil: ${mapLink}\n🆔 ID: ${user.id}`;
+    const orderList = userCart.map(f => f.name).join(", ");
+    const adminMsg = `🔔 YANGI BUYURTMA!\n\n👤 Mijoz: ${user.first_name}\n📞 Tel: +${phone}\n🛍 Mahsulotlar: ${orderList}\n🆔 ID: ${user.id}`;
 
     await bot.telegram.sendMessage(ADMIN_ID, adminMsg,
         Markup.inlineKeyboard([Markup.button.callback("🚫 Bloklash", `block_${user.id}`)])
     );
 
-    ctx.reply("Rahmat! Buyurtmangiz va lokatsiyangiz qabul qilindi. Tez orada bog'lanamiz! ✅",
+    ctx.reply("Rahmat! Buyurtmangiz qabul qilindi. Tez orada bog'lanamiz! ✅",
         Markup.keyboard([['🍽 Menyu', '🛒 Savat']]).resize()
     );
 
-    // Ma'lumotlarni tozalash
     carts[user.id] = [];
-    delete tempOrders[user.id];
 });
 
 // --- ADMIN PANEL ---
